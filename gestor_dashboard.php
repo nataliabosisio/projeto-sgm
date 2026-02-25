@@ -54,15 +54,12 @@
             </div>
         </div>
 
-          <div class="d-flex justify-content-center align-items-center m-3 gap-2">
-            <button type="button" class="btn btn-secondary" disabled>
-              <i class="bi bi-list-ul"></i> Gerenciar Todos os Chamados</button>
-
-          <button type="button" class="btn btn-outline-primary" disabled>
-              <i class="bi bi-geo-alt-fill"></i> Configurar ambiente
-          </button>
-        </div>
-       
+<div class="conteiner m-3">
+    <div class="d-flex justify-content-center p-3">
+        <a href="gestor_chamados.php" type="button" class="btn btn-secondary m-3"><i class="bi bi-list-ul"></i>Gerenciar Chamados</a>
+        <button type="button" class="btn btn-outline-primary m-3">Configurar Ambientes</button>
+    </div>
+</div>
     </main>
 
 
