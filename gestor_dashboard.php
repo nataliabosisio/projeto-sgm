@@ -12,22 +12,27 @@
 
 <body>
 
-    <nav class="navbar bg-dark">
+    <nav class="navbar" style="background-color: #267899">
         <div class="container-fluid">
-            <a class="navbar-brand text-light"> SGM | Gestão Administrativa </a>
+            <a class="navbar-brand text-light"> <i class="bi bi-briefcase"></i> SGM | Gestão Administrativa </a>
             <div class="d-flex">
                 <a class="navbar-brand text-light"> Olá, Admin Gestor | </a>
-                <button class="btn btn-outline-light" type="button"> <a href="api/logout.php" class="text-white text-decoration-none border-0"> Sair </a></button>
+                <button class="btn" type="button"> <a href="api/logout.php" class="text-white text-decoration-none border-0"> Sair </a></button>
             </div>
         </div>
     </nav>
 
+
     <main class="container p-4">
+
+        <h1><i class="bi bi-pc-display-horizontal"></i> Minhas solicitações</h1>
+        <h4 class="" style="color: #d3d3d3"> Visão geral </h4>
+        <br>
         <div class="row">
             <div class="col-sm-4 mb-3 mb-sm-0">
                 <div class="card">
-                    <div class="card-body bg-primary">
-                        <h5 class="card-title text-light">Novas Solicitações</h5>
+                    <div class="card-body p-5 rounded shadow" style="background-color: #50C878">
+                        <h4 class="card-title text-light">Novas Solicitações</h5>
                         <p class="card-text text-light">0</p>
                     </div>
                 </div>
@@ -36,8 +41,8 @@
 
             <div class="col-sm-4">
                 <div class="card">
-                    <div class="card-body bg-warning">
-                        <h5 class="card-title text-light">Em atendimento</h5>
+                    <div class="card-body p-5 rounded shadow" style="background-color: #FBD040">
+                        <h4 class="card-title text-light">Em atendimento</h5>
                         <p class="card-text text-light">0</p>
                     </div>
                 </div>
@@ -45,8 +50,8 @@
             </div>
             <div class="col-sm-4">
                 <div class="card">
-                    <div class="card-body bg-danger">
-                        <h5 class="card-title text-light">Críticos / Urgentes </h5>
+                    <div class="card-body p-5 rounded shadow" style="background-color: #F16548">
+                        <h4 class="card-title text-light">Críticos / Urgentes </h5>
                         <p class="card-text text-light">0</p>
                     </div>
                 </div>
@@ -54,10 +59,10 @@
             </div>
         </div>
 
-<div class="conteiner m-3">
+<div class="m-5 shadow rounded-5">
     <div class="d-flex justify-content-center p-3">
-        <a href="gestor_chamados.php" type="button" class="btn btn-secondary m-3"><i class="bi bi-list-ul"></i>Gerenciar Chamados</a>
-        <button type="button" class="btn btn-outline-primary m-3">Configurar Ambientes</button>
+        <a href="gestor_chamados.php" type="button" class="btn m-3" style="background-color: #267899; color: white;"><i class="bi bi-list-ul"></i> Gerenciar Chamados</a>
+        <button type="button" class="btn m-3" style="color:#267899; border: #267899;"> <i class="bi bi-geo-alt"></i> Configurar Ambientes</button>
     </div>
 </div>
     </main>
