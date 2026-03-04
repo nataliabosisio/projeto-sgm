@@ -16,17 +16,18 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'solicitante') 
     </style>
 </head>
 <body class="bg-light">
-    <nav class="navbar navbar-dark bg-primary mb-4">
+    <nav class="navbar navbar-darkmb-4" style="background-color: #267899;">
         <div class="container">
-            <span class="navbar-brand">SGM - Painel do Solicitante</span>
-            <span class="text-white">Olá, <?= $_SESSION['user_nome'] ?> | <a href="api/logout.php" class="text-white">Sair</a></span>
+            <span class="navbar-brand text-white">SGM - Painel do Solicitante</span>
+            <span class="text-white">Olá, <?= $_SESSION['user_nome'] ?> | <a href="api/logout.php" class="text-white">Sair |</a>
+        <a href="" class="text-decor"> Editar perfil</a></span>
         </div>
     </nav>
 
     <div class="container">
-        <div class="d-flex justify-content-between mb-4">
-            <h2>Minhas Solicitações</h2>
-            <a href="solicitante_abrir_chamado.php" class="btn btn-success">+ Nova Solicitação</a>
+        <div class="d-flex justify-content-between mb-4 mt-3">
+            <h2> <i class="bi bi-archive-fill"></i> Minhas Solicitações</h2>
+            <a href="./solicitante_abrir_chamado.php" class="btn text-white" style="background-color: #267899;">+ Nova Solicitação</a>
         </div>
         <div class="card shadow">
             <div class="table-responsive p-3">

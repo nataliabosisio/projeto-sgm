@@ -62,9 +62,98 @@
 <div class="m-5 shadow rounded-5">
     <div class="d-flex justify-content-center p-3">
         <a href="gestor_chamados.php" type="button" class="btn m-3" style="background-color: #267899; color: white;"><i class="bi bi-list-ul"></i> Gerenciar Chamados</a>
-        <button type="button" class="btn m-3" style="color:#267899; border: #267899;"> <i class="bi bi-geo-alt"></i> Configurar Ambientes</button>
+        <a href="gestor_blocos.php" type="button" class="btn m-3" style="background-color: #267899; color: white;"><i class="bi bi-list-ul"></i> Gerenciar Blocos</a>
+        <!-- Button trigger modal abaixo -->
+        <!-- Button trigger modal abaixo -->
+        <button type="button" class="btn m-3" style="color:#267899; border: #267899;" data-bs-toggle="modal" data-bs-target="#exampleModal"> <i class="bi bi-geo-alt"></i> Configurar Ambientes</button>
     </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel"> Escolha sua opção </h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+      <!-- botões -->
+       <div class="d-flex justify-content-center gap-2 ">
+        <button type="button" class="btn" style="background-color: #267899; color: white;" data-bs-toggle="modal" data-bs-target="#criar" data-bs-whatever="@mdo"> Criar </button>
+        <button type="button" class="btn" style="background-color: #267899; color: white;" data-bs-toggle="modal" data-bs-target="#ambientes" data-bs-whatever="@fat"> <a href="./ambientes_gestor.php" class="text-white text-decoration-none border-0">Ver ambientes </a></button>
+        <button type="button" class="btn" style="background-color: #267899; color: white;"   data-bs-toggle="modal" data-bs-target="#atualizar" data-bs-whatever="@getbootstrap"> Atualizar</button>
+       </div> 
+       <!-- acaba botoes  -->
+    </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- modal 2 -->
+<div class="modal fade" id="criar" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Criar ambiente</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label for="recipient-name" class="col-form-label">Nome do ambiente:</label>
+            <input type="text" class="form-control" id="recipient-name">
+          </div>
+          <div class="mb-3">
+            <label for="recipient-name" class="col-form-label">Nome do bloco:</label>
+            <input type="text" class="form-control" id="recipient-name">
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        <button type="button" class="btn"  style="background-color: #267899; color: white;" >Criar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- modal 3s -->
+
+<div class="modal fade" id="atualizar" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Atualizar ambiente</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label for="recipient-name" class="col-form-label">Nome do ambiente:</label>
+            <input type="text" class="form-control" id="recipient-name">
+          </div>
+          <div class="mb-3">
+            <label for="recipient-name" class="col-form-label">Nome do bloco:</label>
+            <input type="text" class="form-control" id="recipient-name">
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+        <button type="button" class="btn"  style="background-color: #267899; color: white;">Atualizar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
     </main>
 
 
