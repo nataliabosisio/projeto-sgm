@@ -179,6 +179,11 @@ body{
             <span class="menu-text">Ambientes</span>
         </a>
 
+            <a href="gestor_perfil.php">
+        <i class="bi bi-person-circle"></i>
+        <span class="menu-text">Perfil</span>
+    </a>
+
         <a href="logout.php">
             <i class="bi bi-box-arrow-right"></i>
             <span class="menu-text">Sair</span>

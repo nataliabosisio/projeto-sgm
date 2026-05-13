@@ -201,36 +201,42 @@ body{
 
     <div class="menu">
 
-        <a class="active">
-            <i class="bi bi-house"></i>
-            <span class="menu-text">Dashboard</span>
-        </a>
+         <a class="active">
+        <i class="bi bi-house"></i>
+        <span class="menu-text">Dashboard</span>
+    </a>
 
-        <a href="gestor_chamados.php">
-            <i class="bi bi-list-ul"></i>
-            <span class="menu-text">Chamados</span>
-        </a>
+    <a href="gestor_chamados.php">
+        <i class="bi bi-list-ul"></i>
+        <span class="menu-text">Chamados</span>
+    </a>
 
-        <a href="gestor_blocos.php">
-            <i class="bi bi-intersect"></i>
-            <span class="menu-text">Blocos</span>
-        </a>
+    <a href="gestor_blocos.php">
+        <i class="bi bi-intersect"></i>
+        <span class="menu-text">Blocos</span>
+    </a>
 
-        <a href="gestor_servicos.php">
-            <i class="bi bi-card-heading"></i>
-            <span class="menu-text">Serviços</span>
-        </a>
+    <a href="gestor_servicos.php">
+        <i class="bi bi-card-heading"></i>
+        <span class="menu-text">Serviços</span>
+    </a>
 
-        <a href="./ambientes_gestor.php">
-            <i class="bi bi-geo-alt"></i>
-            <span class="menu-text">Ambientes</span>
-        </a>
+    <a href="./ambientes_gestor.php">
+        <i class="bi bi-geo-alt"></i>
+        <span class="menu-text">Ambientes</span>
+    </a>
 
-        <a href="logout.php">
-            <i class="bi bi-box-arrow-right"></i>
-            <span class="menu-text">Sair</span>
-        </a>
+    <!-- 👇 NOVO ITEM ADICIONADO -->
+    <a href="gestor_perfil.php">
+        <i class="bi bi-person-circle"></i>
+        <span class="menu-text">Perfil</span>
+    </a>
 
+    <a href="logout.php">
+        <i class="bi bi-box-arrow-right"></i>
+        <span class="menu-text">Sair</span>
+    </a>
+    
     </div>
 </div>
 

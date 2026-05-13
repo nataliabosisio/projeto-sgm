@@ -179,6 +179,11 @@ body{
             <span class="menu-text">Ambientes</span>
         </a>
 
+            <a href="gestor_perfil.php">
+        <i class="bi bi-person-circle"></i>
+        <span class="menu-text">Perfil</span>
+    </a>
+
         <a href="logout.php">
             <i class="bi bi-box-arrow-right"></i>
             <span class="menu-text">Sair</span>
@@ -191,30 +196,24 @@ body{
 <!-- CONTEÚDO -->
 <div class="main" id="main">
 
-    <div class="topbar">
-        <h3>Ambientes</h3>
-        <p>Gerencie os ambientes cadastrados</p>
-    </div>
-
-    <div class="dashboard-card mb-4">
-        <div class="d-flex justify-content-between align-items-center">
-
-            <h5 class="m-0">
-                <i class="bi bi-door-open-fill"></i>
-                Lista de Ambientes
-            </h5>
-
-            <button
-                class="btn"
-                style="background:#267899;color:white;"
-                data-bs-toggle="modal"
-                data-bs-target="#criar">
-
-                <i class="bi bi-plus-lg"></i>
-                Novo Ambiente
-            </button>
+    <div class="topbar d-flex justify-content-between align-items-center">
+        <div>
+            <h3>Ambientes</h3>
+            <p>Gerencie os ambientes cadastrados</p>
         </div>
+
+        <button
+            class="btn"
+            style="background:#267899;color:white;"
+            data-bs-toggle="modal"
+            data-bs-target="#criar">
+
+            <i class="bi bi-plus-lg"></i>
+            Novo Ambiente
+        </button>
     </div>
+
+
 
 
     <div class="dashboard-card">
