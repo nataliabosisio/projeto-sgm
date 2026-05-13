@@ -3,21 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ambientes</title>
+    <title> Blocos </title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 </head>
 <body>
-     <nav class="navbar" style="background-color: #267899">
-        <div class="container-fluid">
-            <a class="navbar-brand text-light"> <i class="bi bi-briefcase"></i> SGM | Gestão Administrativa </a>
-            <div class="d-flex">
-                <a class="navbar-brand text-light"> Olá, Admin Gestor | </a>
-                 <button class="btn text-white " style="background-color: #267899;" type="button"><a href="./gestor_dashboard.php" class="text-white text-decoration-none border-0"> Inicio </a></button>
-                <button class="btn" type="button"> <a href="api/logout.php" class="text-white text-decoration-none border-0"> Sair </a></button>
-            </div>
+
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm py-2" style="background-color: #267899">
+
+  <div class="container-fluid px-4">
+
+    <!-- Logo esquerda -->
+    <a class="navbar-brand fw-semibold mb-0">
+      <i class="bi bi-briefcase"></i> SGM | Gestão Administrativa
+    </a>
+
+    <!-- Botão mobile -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Conteúdo -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+      <!-- empurra tudo pra direita -->
+      <div class="ms-auto d-flex align-items-center gap-3">
+
+        <span class="text-white small fw-semibold">
+          Olá, Admin Gestor
+        </span>
+
+        <div class="dropdown">
+          <button class="btn d-flex align-items-center justify-content-center rounded-circle p-0"
+            style="width: 45px; height: 45px;"
+            data-bs-toggle="dropdown">
+
+            <i class="bi bi-person-circle" style="color: white; font-size: 1.5rem;"></i>
+          </button>
+
+          <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+            <li>
+              <a class="dropdown-item py-2" href="gestor_perfil.php">
+                <i class="bi bi-person"></i> Meu Perfil
+              </a>
+            </li>
+
+            <li><hr class="dropdown-divider"></li>
+
+            <li>
+              <a class="dropdown-item text-danger py-2" href="api/logout.php">
+                <i class="bi bi-box-arrow-right"></i> Sair
+              </a>
+            </li>
+          </ul>
         </div>
+
+      </div>
+
+    </div>
+
+  </div>
 </nav>
 
 <!-- button modal  -->
@@ -65,10 +111,10 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>ID Bloco</th>
-                            <th>Nome do Bloco</th>
-                            <th>Descrição</th>
-                            <th> Configurações </th>
+                            <th>ID</th>
+                            <th>Nome do Bloco </th>
+                            <th>Descrição </th>
+                            <th> Ações </th>
     
                         </tr>
                     </thead>
@@ -77,10 +123,13 @@
                         <td>19</td>
                         <td>Nome do bloco</td>
                         <td>77</td>
-                        <td> Editar </td>
+                        <td>
+                          <button type="btn" class="text-decoration-none border-0" style="background-color: white; color: black;"> <a href=""><i class="bi bi-pencil"></i> Editar</a> </button> 
+                          <button type="btn" class="text-dark text-decoration-none border-0" style="background-color: white;"><a href=""><i class="bi bi-trash3"></i></a></button>
+                        </td>
                       </tr>
                     </tbody>
-                </table>
+                </table>  
             </div>
         </div>
     </div>
@@ -90,3 +139,4 @@
     </script>
 </body>
 </html>
+
