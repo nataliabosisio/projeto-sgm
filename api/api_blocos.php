@@ -110,8 +110,10 @@ switch ($method) {
 
         break;
 
-    // DELETE
-    case 'DELETE':
+// DELETE
+case 'DELETE':
+
+    try {
 
         $data = json_decode(file_get_contents("php://input"));
 
@@ -125,12 +127,32 @@ switch ($method) {
 
         $id = (int)$data->id_bloco;
 
-        $sql = "DELETE FROM blocos WHERE id_bloco=$id";
+        // verificar se existem ambientes ligados ao bloco
+        $sqlCheck = "
+            SELECT COUNT(*) AS total
+            FROM ambientes
+            WHERE id_bloco = $id
+        ";
+
+        $res = $conn->query($sqlCheck);
+        $row = $res->fetch_assoc();
+
+        if ($row['total'] > 0) {
+            echo json_encode([
+                "success" => false,
+                "message" =>
+                    "Não é possível excluir este bloco porque existem ambientes vinculados a ele."
+            ]);
+            exit;
+        }
+
+        // excluir bloco
+        $sql = "DELETE FROM blocos WHERE id_bloco = $id";
 
         if ($conn->query($sql)) {
             echo json_encode([
                 "success" => true,
-                "message" => "Excluído com sucesso"
+                "message" => "Bloco excluído com sucesso"
             ]);
         } else {
             echo json_encode([
@@ -139,7 +161,14 @@ switch ($method) {
             ]);
         }
 
-        break;
+    } catch (mysqli_sql_exception $e) {
+        echo json_encode([
+            "success" => false,
+            "message" => $e->getMessage()
+        ]);
+    }
+
+    break;
 
     default:
         echo json_encode([

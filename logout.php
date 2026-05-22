@@ -1,3 +1,24 @@
+
+
+<?php
+session_start();
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
+$voltar = "login.php";
+
+if ($_SESSION['user_perfil'] === 'gestor') {
+    $voltar = "gestor_dashboard.php";
+}
+
+if ($_SESSION['user_perfil'] === 'solicitante') {
+    $voltar = "solicitante_dashboard.php";
+}
+?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -55,11 +76,12 @@ h3{
             Sim, sair
         </a>
 
-        <a href="gestor_dashboard.php" class="btn btn-outline-secondary px-4">
-            Cancelar
-        </a>
+<a href="<?= $voltar ?>" class="btn btn-outline-secondary px-4">
+    Cancelar
+</a>
     </div>
 </div>
 
+</div>
 </body>
 </html>

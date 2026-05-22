@@ -166,6 +166,11 @@ body{
             <span class="menu-text">Ambientes</span>
         </a>
 
+        <a href="usuarios.php">
+    <i class="bi bi-people-fill"></i>
+    <span class="menu-text">Usuários</span>
+</a>
+
         <a href="gestor_perfil.php">
             <i class="bi bi-person-circle"></i>
             <span class="menu-text">Perfil</span>
@@ -231,22 +236,73 @@ body{
         <h5 class="modal-title">Criar Bloco</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
+<div class="modal-body">
+    <div class="mb-3">
+        <label class="form-label">Nome do Bloco</label>
+        <input
+            type="text"
+            class="form-control"
+            id="nome_bloco"
+        >
+    </div>
 
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label">Nome do Bloco</label>
-          <input type="text" class="form-control">
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Descrição</label>
-          <input type="text" class="form-control">
-        </div>
-      </div>
+    <div class="mb-3">
+        <label class="form-label">Descrição</label>
+        <input
+            type="text"
+            class="form-control"
+            id="descricao_bloco"
+        >
+    </div>
+</div>
 
       <div class="modal-footer">
         <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
         <button class="btn" style="background-color:#267899;color:white;">Criar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- modal -->
+<div class="modal fade" id="editar" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Editar Bloco</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <input type="hidden" id="editar_id">
+
+        <div class="mb-3">
+            <label>Nome</label>
+            <input type="text" class="form-control" id="editar_nome">
+        </div>
+
+        <div class="mb-3">
+            <label>Descrição</label>
+            <input type="text" class="form-control" id="editar_descricao">
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
+            Fechar
+        </button>
+
+        <button
+            class="btn"
+            style="background:#267899;color:white"
+            onclick="salvarEdicao()"
+        >
+            Salvar
+        </button>
       </div>
 
     </div>
@@ -284,15 +340,21 @@ async function carregarBlocos() {
                 <td>#${b.id_bloco}</td>
                 <td>${b.nome}</td>
                 <td>${b.descricao || '-'}</td>
-                <td>
-                    <button class="btn btn-sm btn-light">
-                        <i class="bi bi-pencil"></i> Editar
-                    </button>
+<td>
+    <button
+        class="btn btn-sm btn-light"
+        onclick="editarBloco(${b.id_bloco}, '${b.nome}', '${b.descricao || ''}')"
+    >
+        <i class="bi bi-pencil"></i> Editar
+    </button>
 
-                    <button class="btn btn-sm btn-light text-danger">
-                        <i class="bi bi-trash3"></i>
-                    </button>
-                </td>
+    <button
+        class="btn btn-sm btn-light text-danger"
+        onclick="deletarBloco(${b.id_bloco})"
+    >
+        <i class="bi bi-trash3"></i>
+    </button>
+</td>
             </tr>
         `).join('');
 
@@ -350,6 +412,90 @@ document.querySelector("#criar .btn[style]").addEventListener("click", async () 
         alert("Erro ao criar bloco");
     }
 });
+
+async function deletarBloco(id) {
+
+    if (!confirm("Deseja excluir este bloco?")) return;
+
+    try {
+        const res = await fetch("api/api_blocos.php", {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id_bloco: id
+            })
+        });
+
+        const texto = await res.text();
+        console.log("RESPOSTA API DELETE:", texto);
+
+        const data = JSON.parse(texto);
+
+        if (data.success) {
+            alert("Bloco excluído!");
+            carregarBlocos();
+        } else {
+            alert(data.message);
+        }
+
+    } catch (err) {
+        console.error("ERRO DELETE:", err);
+        alert("Erro ao excluir");
+    }
+}
+
+function editarBloco(id, nome, descricao){
+
+    document.getElementById("editar_id").value = id;
+    document.getElementById("editar_nome").value = nome;
+    document.getElementById("editar_descricao").value = descricao;
+
+    new bootstrap.Modal(
+        document.getElementById("editar")
+    ).show();
+}
+
+async function salvarEdicao(){
+
+    const id = document.getElementById("editar_id").value;
+    const nome = document.getElementById("editar_nome").value;
+    const descricao = document.getElementById("editar_descricao").value;
+
+    try {
+        const res = await fetch("api/api_blocos.php", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id_bloco: id,
+                nome,
+                descricao
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            alert("Bloco atualizado!");
+
+            bootstrap.Modal.getInstance(
+                document.getElementById("editar")
+            ).hide();
+
+            carregarBlocos();
+
+        } else {
+            alert(data.message);
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("Erro ao atualizar");
+    }
+}
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>

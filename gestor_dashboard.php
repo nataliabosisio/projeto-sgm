@@ -226,6 +226,11 @@ body{
         <span class="menu-text">Ambientes</span>
     </a>
 
+    <a href="usuarios.php">
+    <i class="bi bi-people-fill"></i>
+    <span class="menu-text">Usuários</span>
+</a>
+
     <!-- 👇 NOVO ITEM ADICIONADO -->
     <a href="gestor_perfil.php">
         <i class="bi bi-person-circle"></i>

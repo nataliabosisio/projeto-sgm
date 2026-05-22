@@ -12,7 +12,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_perfil'] !== 'gestor') {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Serviços</title>
+<title>Usuários</title>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
@@ -34,7 +34,7 @@ body{
     border-right:1px solid #eee;
     transition:.3s;
     overflow:hidden;
-    box-shadow:4px 0 15px rgba(0,0,0,.05);
+    box-shadow:0 4px 15px rgba(0,0,0,.05);
     z-index:1000;
 }
 
@@ -139,6 +139,7 @@ body{
 }
 </style>
 </head>
+
 <body>
 
 <!-- SIDEBAR -->
@@ -167,7 +168,7 @@ body{
             <span class="menu-text">Blocos</span>
         </a>
 
-        <a class="active">
+        <a href="gestor_servicos.php">
             <i class="bi bi-card-heading"></i>
             <span class="menu-text">Serviços</span>
         </a>
@@ -177,10 +178,10 @@ body{
             <span class="menu-text">Ambientes</span>
         </a>
 
-        <a href="usuarios.php">
-    <i class="bi bi-people-fill"></i>
-    <span class="menu-text">Usuários</span>
-</a>
+        <a class="active">
+            <i class="bi bi-people-fill"></i>
+            <span class="menu-text">Usuários</span>
+        </a>
 
         <a href="gestor_perfil.php">
             <i class="bi bi-person-circle"></i>
@@ -195,55 +196,65 @@ body{
     </div>
 </div>
 
-<!-- CONTEÚDO -->
+<!-- MAIN -->
 <div class="main" id="main">
 
     <div class="topbar d-flex justify-content-between align-items-center">
         <div>
-            <h3>Tipos de Serviço</h3>
-            <p>Gerencie os serviços cadastrados</p>
+            <h3>Usuários</h3>
+            <p>Gerencie os usuários do sistema</p>
         </div>
 
         <button
             class="btn"
             style="background:#267899;color:white;"
             data-bs-toggle="modal"
-            data-bs-target="#criar">
+            data-bs-target="#modalUsuario">
 
             <i class="bi bi-plus-lg"></i>
-            Novo Serviço
+            Novo Usuário
         </button>
     </div>
 
     <div class="dashboard-card">
+
         <div class="table-responsive">
 
             <table class="table table-hover align-middle mb-0">
+
                 <thead class="table-light">
                     <tr>
                         <th>ID</th>
-                        <th>Nome do Serviço</th>
-                        <th>Descrição</th>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Perfil</th>
+                        <th>Status</th>
                         <th class="text-center">Ações</th>
                     </tr>
                 </thead>
 
-                <tbody id="tabelaBody"></tbody>
+                <tbody id="tabelaUsuarios"></tbody>
+
             </table>
 
         </div>
+
     </div>
+
 </div>
 
 <!-- MODAL -->
-<div class="modal fade" id="criar" tabindex="-1">
+<div class="modal fade" id="modalUsuario" tabindex="-1">
+
 <div class="modal-dialog modal-dialog-centered">
+
 <div class="modal-content shadow">
 
 <div class="modal-header bg-light">
+
     <h5 class="modal-title fw-semibold">
-        <i class="bi bi-plus-circle"></i>
-        Criar serviço
+        <i class="bi bi-person-plus"></i>
+        Usuário
     </h5>
 
     <button
@@ -251,40 +262,64 @@ body{
         class="btn-close"
         data-bs-dismiss="modal">
     </button>
+
 </div>
 
 <div class="modal-body">
 
-<form id="formServico">
+<form id="formUsuario">
 
     <div class="mb-3">
-        <label class="form-label">
-            Nome do serviço
-        </label>
+        <label class="form-label">Nome</label>
 
         <input
             type="text"
             class="form-control"
-            id="nome_servico"
+            id="nome"
             required>
     </div>
 
     <div class="mb-3">
-        <label class="form-label">
-            Descrição
-        </label>
+        <label class="form-label">Email</label>
 
         <input
-            type="text"
+            type="email"
             class="form-control"
-            id="descricao_servico">
+            id="email"
+            required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Senha</label>
+
+        <input
+            type="password"
+            class="form-control"
+            id="senha">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Perfil</label>
+
+        <select
+            class="form-select"
+            id="perfil"
+            required>
+
+            <option value="solicitante">Solicitante</option>
+            <option value="tecnico">Técnico</option>
+            <option value="gestor">Gestor</option>
+
+        </select>
     </div>
 
     <div class="modal-footer px-0">
+
         <button
             type="button"
             class="btn btn-outline-secondary"
             data-bs-dismiss="modal">
+
             Fechar
         </button>
 
@@ -292,8 +327,10 @@ body{
             type="submit"
             class="btn"
             style="background:#267899;color:white;">
+
             Salvar
         </button>
+
     </div>
 
 </form>
@@ -306,64 +343,127 @@ body{
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-const API = 'api/tipos_servico.php';
+const API = 'api/usuarios.php';
 
 function toggleSidebar(){
     document.getElementById('sidebar').classList.toggle('collapsed');
     document.getElementById('main').classList.toggle('expanded');
 }
 
-async function carregarServicos() {
-    const body = document.getElementById('tabelaBody');
+// ================= LISTAR =================
+async function carregarUsuarios(){
 
-    try {
+    const tabela =
+        document.getElementById('tabelaUsuarios');
+
+    try{
+
         const res = await fetch(API);
         const json = await res.json();
 
-        if (!json.data || json.data.length === 0) {
-            body.innerHTML =
-                '<tr><td colspan="4" class="text-center">Nenhum serviço encontrado.</td></tr>';
+        if(!json.data || json.data.length === 0){
+
+            tabela.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center">
+                        Nenhum usuário encontrado.
+                    </td>
+                </tr>
+            `;
+
             return;
         }
 
-        body.innerHTML = json.data.map(s => `
+        tabela.innerHTML = json.data.map(u => `
+
             <tr>
-                <td>#${s.id_tipo}</td>
-                <td>${s.nome}</td>
-                <td>${s.descricao || '-'}</td>
+
+                <td>#${u.id_usuario}</td>
+
+                <td>${u.nome}</td>
+
+                <td>${u.email}</td>
+
+                <td>
+                    <td>
+    ${
+        u.perfil === 'gestor'
+        ? '<span class="badge bg-danger">Gestor</span>'
+
+        : u.perfil === 'tecnico'
+        ? '<span class="badge bg-warning text-dark">Técnico</span>'
+
+        : '<span class="badge bg-info text-dark">Solicitante</span>'
+    }
+</td>
+                </td>
+
+                <td>
+                    ${
+                        u.ativo == 1
+                        ? '<span class="badge bg-success">Ativo</span>'
+                        : '<span class="badge bg-danger">Inativo</span>'
+                    }
+                </td>
+
                 <td class="text-center">
 
-                    <button class="btn btn-sm btn-outline-primary me-2"
-                        onclick="abrirEdicao(${s.id_tipo}, '${s.nome}', '${s.descricao || ''}')">
+                    <button
+                        class="btn btn-sm btn-outline-primary me-2"
+                        onclick="editarUsuario(
+                            ${u.id_usuario},
+                            '${u.nome}',
+                            '${u.email}',
+                            '${u.perfil}'
+                        )">
+
                         <i class="bi bi-pencil"></i>
                     </button>
 
-                    <button class="btn btn-sm btn-outline-danger"
-                        onclick="excluirServico(${s.id_tipo})">
+                    <button
+                        class="btn btn-sm btn-outline-danger"
+                        onclick="excluirUsuario(${u.id_usuario})">
+
                         <i class="bi bi-trash"></i>
                     </button>
 
                 </td>
+
             </tr>
+
         `).join('');
 
-    } catch (err) {
+    }catch(err){
         console.error(err);
     }
 }
 
-document.getElementById('formServico').addEventListener('submit', async (e)=>{
+// ================= SALVAR =================
+document.getElementById('formUsuario').addEventListener('submit', async (e)=>{
     e.preventDefault();
 
-    const nome = nome_servico.value;
-    const descricao = descricao_servico.value;
+    const nome = document.getElementById('nome').value;
+    const email = document.getElementById('email').value;
+    const senha = document.getElementById('senha').value;
+    const perfil = document.getElementById('perfil').value;
+
     const id = e.target.dataset.id;
 
     const metodo = id ? 'PUT' : 'POST';
 
     const body = id
-        ? { id_tipo:id, nome, descricao }
-        : { nome, descricao };
+        ? {
+            id_usuario:id,
+            nome,
+            email,
+            perfil
+        }
+        : {
+            nome,
+            email,
+            senha,
+            perfil
+        };
 
     const res = await fetch(API,{
         method:metodo,
@@ -376,63 +476,71 @@ document.getElementById('formServico').addEventListener('submit', async (e)=>{
     const data = await res.json();
 
     if(data.success){
+
         alert('Salvo com sucesso!');
+
         e.target.reset();
+
         delete e.target.dataset.id;
 
         bootstrap.Modal
-            .getInstance(document.getElementById('criar'))
+            .getInstance(
+                document.getElementById('modalUsuario')
+            )
             .hide();
 
-        carregarServicos();
+        carregarUsuarios();
+
     }else{
         alert(data.message);
     }
 });
 
-function abrirEdicao(id,nome,descricao){
-    nome_servico.value = nome;
-    descricao_servico.value = descricao;
+// ================= EDITAR =================
+function editarUsuario(id,nomeUsuario,emailUsuario,perfilUsuario){
 
-    const form = document.getElementById('formServico');
+    nome.value = nomeUsuario;
+    email.value = emailUsuario;
+    perfil.value = perfilUsuario;
+
+    senha.value = '';
+
+    const form =
+        document.getElementById('formUsuario');
+
     form.dataset.id = id;
 
     new bootstrap.Modal(
-        document.getElementById('criar')
+        document.getElementById('modalUsuario')
     ).show();
 }
 
-async function excluirServico(id){
-    if(!confirm('Excluir serviço?')) return;
+// ================= EXCLUIR =================
+async function excluirUsuario(id){
 
-    try{
-        const res = await fetch(API,{
-            method:'DELETE',
-            headers:{
-                'Content-Type':'application/json'
-            },
-            body:JSON.stringify({
-                id_tipo:id
-            })
-        });
+    if(!confirm('Deseja desativar este usuário?'))
+        return;
 
-        const texto = await res.text();
-        console.log(texto);
+    const res = await fetch(API,{
+        method:'DELETE',
+        headers:{
+            'Content-Type':'application/json'
+        },
+        body:JSON.stringify({
+            id_usuario:id
+        })
+    });
 
-        const data = JSON.parse(texto);
+    const data = await res.json();
 
-        if(data.success){
-            carregarServicos();
-        }else{
-            alert(data.message);
-        }
-
-    }catch(err){
-        console.error(err);
+    if(data.success){
+        carregarUsuarios();
+    }else{
+        alert(data.message);
     }
 }
 
-window.onload = carregarServicos;
+window.onload = carregarUsuarios;
 </script>
 
 </body>

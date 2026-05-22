@@ -206,7 +206,7 @@ body{
             <span class="menu-text">Meu Perfil</span>
         </a>
 
-        <a href="api/logout.php">
+        <a href="logout.php">
             <i class="bi bi-box-arrow-right"></i>
             <span class="menu-text">Sair</span>
         </a>
