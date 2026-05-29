@@ -47,7 +47,6 @@ body{
     color:#267899;
     font-weight:bold;
     border-bottom:1px solid #f0f0f0;
-    white-space:nowrap;
 }
 
 .logo-text{
@@ -81,7 +80,6 @@ body{
     border-radius:12px;
     margin-bottom:8px;
     transition:.3s;
-    white-space:nowrap;
 }
 
 .menu a:hover{
@@ -92,10 +90,6 @@ body{
 .menu a.active{
     background:#267899;
     color:white;
-}
-
-.menu-text{
-    transition:.3s;
 }
 
 .sidebar.collapsed .menu-text{
@@ -113,6 +107,7 @@ body{
     margin-left:80px;
 }
 
+/* TOPBAR */
 .topbar{
     background:white;
     border-radius:18px;
@@ -131,7 +126,31 @@ body{
     margin:0;
 }
 
-/* CARD */
+/* CARDS */
+.info-card{
+    background:white;
+    border-radius:18px;
+    padding:22px;
+    box-shadow:0 4px 15px rgba(0,0,0,.05);
+    border-left:5px solid #267899;
+    transition:.3s;
+}
+
+.info-card:hover{
+    transform:translateY(-3px);
+}
+
+.info-card h6{
+    color:#777;
+}
+
+.info-card h2{
+    margin:0;
+    color:#267899;
+    font-weight:bold;
+}
+
+/* TABLE CARD */
 .dashboard-card{
     background:white;
     border-radius:18px;
@@ -139,7 +158,6 @@ body{
     box-shadow:0 4px 15px rgba(0,0,0,.05);
 }
 
-/* TABLE */
 .table th{
     color:#267899;
     border-top:none;
@@ -149,35 +167,53 @@ body{
     vertical-align:middle;
 }
 
+tr:hover{
+    background:#fafcff;
+}
+
 .badge{
     padding:8px 12px;
     border-radius:10px;
+    font-weight:500;
 }
 
 .mini-thumb{
-    width:45px;
-    height:45px;
+    width:52px;
+    height:52px;
     object-fit:cover;
-    border-radius:8px;
+    border-radius:10px;
     cursor:pointer;
     border:1px solid #ddd;
+    transition:.3s;
+}
+
+.mini-thumb:hover{
+    transform:scale(1.08);
 }
 
 .btn-primary-custom{
     background:#267899;
     color:white;
     border:none;
-    padding:10px 18px;
+    padding:12px 18px;
     border-radius:12px;
     text-decoration:none;
+    font-weight:600;
 }
 
 .btn-primary-custom:hover{
     background:#1f6682;
+    color:white;
+}
+
+/* modal imagem */
+.modal-content{
+    border:none;
+    border-radius:18px;
+    overflow:hidden;
 }
 </style>
 </head>
-
 <body>
 
 <!-- SIDEBAR -->
@@ -222,9 +258,36 @@ body{
         <p>Olá, <?= $_SESSION['user_nome'] ?></p>
     </div>
 
+    <!-- RESUMO -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-md-4">
+            <div class="info-card">
+                <h6>Total de Chamados</h6>
+                <h2 id="totalChamados">0</h2>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="info-card">
+                <h6>Em andamento</h6>
+                <h2 id="abertosChamados">0</h2>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="info-card">
+                <h6>Concluídos</h6>
+                <h2 id="concluidosChamados">0</h2>
+            </div>
+        </div>
+
+    </div>
+
     <div class="d-flex justify-content-end mb-4">
         <a href="solicitante_abrir_chamado.php" class="btn-primary-custom">
-            + Nova Solicitação
+            <i class="bi bi-plus-lg"></i>
+            Nova Solicitação
         </a>
     </div>
 
@@ -246,6 +309,7 @@ body{
             </table>
         </div>
     </div>
+
 </div>
 
 <!-- MODAL FOTO -->
@@ -269,7 +333,9 @@ function toggleSidebar(){
 
 function verFoto(url){
     document.getElementById('imgModal').src = url;
-    new bootstrap.Modal(document.getElementById('modalFoto')).show();
+    new bootstrap.Modal(
+        document.getElementById('modalFoto')
+    ).show();
 }
 
 async function carregarChamados(){
@@ -283,10 +349,26 @@ async function carregarChamados(){
     const cores = {
         aberto:'bg-secondary',
         agendado:'bg-info',
-        em_execucao:'bg-warning',
+        em_execucao:'bg-warning text-dark',
         concluido:'bg-success',
         fechado:'bg-dark'
     };
+
+    // resumo
+    document.getElementById('totalChamados').textContent =
+        chamados.length;
+
+    document.getElementById('abertosChamados').textContent =
+        chamados.filter(c =>
+            c.status !== 'concluido' &&
+            c.status !== 'fechado'
+        ).length;
+
+    document.getElementById('concluidosChamados').textContent =
+        chamados.filter(c =>
+            c.status === 'concluido' ||
+            c.status === 'fechado'
+        ).length;
 
     lista.innerHTML = await Promise.all(
         chamados.map(async c => {
@@ -296,23 +378,25 @@ async function carregarChamados(){
                     `api/anexos.php?id_chamado=${c.id_chamado}`
                 )).json();
 
-            const thumbHtml =
+            const thumb =
                 anexos.length > 0
                 ? `<img src="${anexos[0].caminho_arquivo}"
                     class="mini-thumb"
                     onclick="verFoto('${anexos[0].caminho_arquivo}')">`
-                : `<i class="bi bi-image text-muted"></i>`;
+                : `<i class="bi bi-image text-muted fs-4"></i>`;
 
             return `
                 <tr>
                     <td>#${c.id_chamado}</td>
-                    <td>${thumbHtml}</td>
+                    <td>${thumb}</td>
                     <td>${c.bloco_nome} - ${c.ambiente_nome}</td>
-                    <td>${c.descricao_problema.substring(0,30)}...</td>
-                    <td>${new Date(c.data_abertura).toLocaleDateString()}</td>
+                    <td>${c.descricao_problema.substring(0,40)}...</td>
+                    <td>${new Date(
+                        c.data_abertura
+                    ).toLocaleDateString()}</td>
                     <td>
                         <span class="badge ${cores[c.status]}">
-                            ${c.status.toUpperCase()}
+                            ${c.status.replace('_',' ').toUpperCase()}
                         </span>
                     </td>
                 </tr>
