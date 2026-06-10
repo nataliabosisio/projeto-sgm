@@ -12,8 +12,8 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch($method){
     case 'GET':
-        $sql = "SELECT  a.id_ambiente, a.nome, a.id_bloco, b.nome as nome_bloco 
-        FROM ambientes a LEFT JOIN blocos b ON a.id_bloco = b.id_bloco ORDER BY a.nome ASC";
+        $sql = "SELECT a.id_ambiente, a.nome, a.id_bloco, b.nome as nome_bloco 
+                FROM ambientes a LEFT JOIN blocos b ON a.id_bloco = b.id_bloco ORDER BY a.nome ASC";
 
         $result = $conn->query($sql);
         $ambientes = [];
@@ -23,32 +23,31 @@ switch($method){
                 $ambientes[] = $row;
             }
         }
-    echo json_encode(["success" => true, "data" => $ambientes]);
-    break;
+        echo json_encode(["success" => true, "data" => $ambientes]);
+        break;
 
     case 'POST':
         $data = json_decode(file_get_contents("php://input"));
 
-       if(!isset($data->nome)|| !isset($data->id_bloco)){
-        echo json_encode(["success" => false, "message" => "Dados incompletos. Informe nome e id.bloco."]);
-        exit;
-    }
+        if(!isset($data->nome) || !isset($data->id_bloco)){
+            echo json_encode(["success" => false, "message" => "Dados incompletos. Informe nome e id_bloco."]);
+            exit;
+        }
 
-    $nome = $conn->real_escape_string(trim($data->nome));
-    $id_bloco = (int)$data->id_bloco;
+        $nome = $conn->real_escape_string(trim($data->nome));
+        $id_bloco = (int)$data->id_bloco;
 
-    $sql="INSERT INTO ambientes (nome, id_bloco) VALUES ('$nome', $id_bloco)";
+        $sql = "INSERT INTO ambientes (nome, id_bloco) VALUES ('$nome', $id_bloco)";
 
-    if($conn->query($sql) === TRUE){
-            echo json_encode(["success" => true, "message" => "Ambiente criado com sucesso!",
-             "id_ambiente" => $conn->insert_id]);
-    }else{
-        echo json_encode(["success" => false, "message" => "Erro ao criar ambiente:" .$conn->error]);
-    }
-    break;
+        if($conn->query($sql) === TRUE){
+            echo json_encode(["success" => true, "message" => "Ambiente criado com sucesso!", "id_ambiente" => $conn->insert_id]);
+        } else {
+            echo json_encode(["success" => false, "message" => "Erro ao criar ambiente: " . $conn->error]);
+        }
+        break;
 
     case 'PUT':
-       $data = json_decode(file_get_contents("php://input"));
+        $data = json_decode(file_get_contents("php://input"));
         if(!isset($data->id_ambiente) || !isset($data->nome) || !isset($data->id_bloco)) {
             echo json_encode(["success" => false, "message" => "Dados incompletos para atualização."]);
             exit;
@@ -67,27 +66,33 @@ switch($method){
         }
         break;
 
-        case 'DELETE':
-            $data= json_decode(file_get_contents("php://input"));
-            if(!isset($data->id_ambiente)){
-                echo json_encode(["success" => false, "message" => "ID do ambiente não fornecido."]);
-                exit;
-            }
+    case 'DELETE':
+        $data = json_decode(file_get_contents("php://input"));
+        if(!isset($data->id_ambiente)){
+            echo json_encode(["success" => false, "message" => "ID do ambiente não fornecido."]);
+            exit;
+        }
 
-            $id_ambiente = (int)$data->id_ambiente;
-            $sql = "DELETE FROM ambientes WHERE id_ambiente = $id_ambiente";
+        $id_ambiente = (int)$data->id_ambiente;
+        $sql = "DELETE FROM ambientes WHERE id_ambiente = $id_ambiente";
+        
+        try {
             if($conn->query($sql) === TRUE){
                 echo json_encode(["success" => true, "message" => "Ambiente excluído com sucesso!"]);
-            }else{
-                echo json_encode(["success" => false, "message"=> 
-                "Erro ao excluir: pode haver dados vinculados a este ambiente."]);
+            } else {
+                echo json_encode(["success" => false, "message" => "Erro ao excluir o ambiente."]);
             }
-                break;
+        } catch (mysqli_sql_exception $e) {
+            echo json_encode([
+                "success" => false, 
+                "message" => "Não foi possível excluir: existem dados (como chamados) vinculados a este ambiente.",
+                "error" => $e->getMessage()
+            ]);
+        }
+        break;
 
-             default:
-            echo json_encode( ["success"=>false, "message" => "Método HTTP não suportado"]);
-            break;
-            }
-
-
+    default:
+        echo json_encode(["success" => false, "message" => "Método HTTP não suportado"]);
+        break;
+}
 ?>
