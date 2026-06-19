@@ -229,7 +229,7 @@ body{
 
 <!-- MODAL -->
 <div class="modal fade" id="criar" tabindex="-1">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
 
       <div class="modal-header">
@@ -267,7 +267,7 @@ body{
 
 <!-- modal -->
 <div class="modal fade" id="editar" tabindex="-1">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
 
       <div class="modal-header">
