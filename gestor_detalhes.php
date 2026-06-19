@@ -249,9 +249,24 @@ if (!$id) {
             // Preenche as informações fixas da conclusão
             document.getElementById('infoTecnico').textContent = c.tecnico_nome || 'Não informado';
             document.getElementById('infoPrioridade').textContent = (c.prioridade || 'Não definida').toUpperCase();
-            document.getElementById('infoDataPrevista').textContent = c.data_prevista 
-                ? new Date(c.data_prevista).toLocaleDateString('pt-BR') 
+            document.getElementById('infoDataPrevista').textContent = c.data_previsao_conclusao 
+                ? new Date(c.data_previsao_conclusao.replace(/-/g, '\/')).toLocaleDateString('pt-BR') 
                 : 'Não informada';
+        } else {
+            // Preenche o formulário se o chamado já tiver atribuição ativa
+            if (c.id_tecnico) {
+                select.value = c.id_tecnico;
+                const btnSubmit = document.querySelector('#formAtribuir button');
+                if (btnSubmit) {
+                    btnSubmit.textContent = 'Atualizar Atribuição';
+                }
+            }
+            if (c.prioridade) {
+                document.getElementById('prioridade').value = c.prioridade;
+            }
+            if (c.data_previsao_conclusao) {
+                document.getElementById('data_prevista').value = c.data_previsao_conclusao.substring(0, 10);
+            }
         }
 
         const dataFormatada = c.data_abertura ? new Date(c.data_abertura).toLocaleString('pt-BR') : '';

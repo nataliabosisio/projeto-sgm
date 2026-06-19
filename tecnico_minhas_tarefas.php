@@ -427,6 +427,10 @@ $nome_tecnico = isset($_SESSION['user_nome']) ? $_SESSION['user_nome'] : (isset(
                 // Tratando fallbacks caso sua coluna de descrição se chame 'descricao' ou 'descricao_problema'
                 const descricaoTexto = c.descricao_problema || c.descricao || 'Sem descrição informada.';
 
+                const tempoExibido = (c.tempo_gasto_minutos !== null && c.tempo_gasto_minutos !== undefined && parseInt(c.tempo_gasto_minutos) > 0)
+                    ? `${c.tempo_gasto_minutos} min`
+                    : '--:--';
+
                 grid.innerHTML += `
                     <div class="col-md-6 col-lg-4">
                         <div class="task-card">
@@ -446,7 +450,7 @@ $nome_tecnico = isset($_SESSION['user_nome']) ? $_SESSION['user_nome'] : (isset(
 
                             <div class="task-footer">
                                 <span><i class="bi bi-calendar3 me-1"></i> ${dataFormatada}</span>
-                                <span><i class="bi bi-clock me-1"></i> --:--</span>
+                                <span><i class="bi bi-clock me-1"></i> ${tempoExibido}</span>
                             </div>
 
                             <div class="btn-actions-layout">
