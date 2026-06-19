@@ -208,8 +208,7 @@ body{
         <button
             class="btn"
             style="background:#267899;color:white;"
-            data-bs-toggle="modal"
-            data-bs-target="#modalUsuario">
+            onclick="novoUsuario()">
 
             <i class="bi bi-plus-lg"></i>
             Novo Usuário
@@ -290,7 +289,7 @@ body{
     </div>
 
     <div class="mb-3">
-        <label class="form-label">Senha</label>
+        <label class="form-label" id="senhaLabel">Senha</label>
 
         <input
             type="password"
@@ -310,6 +309,14 @@ body{
             <option value="tecnico">Técnico</option>
             <option value="gestor">Gestor</option>
 
+        </select>
+    </div>
+
+    <div class="mb-3" id="grupoStatus" style="display: none;">
+        <label class="form-label">Status</label>
+        <select class="form-select" id="status">
+            <option value="1">Ativo</option>
+            <option value="0">Inativo</option>
         </select>
     </div>
 
@@ -414,7 +421,8 @@ async function carregarUsuarios(){
                             ${u.id_usuario},
                             '${u.nome}',
                             '${u.email}',
-                            '${u.perfil}'
+                            '${u.perfil}',
+                            ${u.ativo}
                         )">
 
                         <i class="bi bi-pencil"></i>
@@ -446,6 +454,7 @@ document.getElementById('formUsuario').addEventListener('submit', async (e)=>{
     const email = document.getElementById('email').value;
     const senha = document.getElementById('senha').value;
     const perfil = document.getElementById('perfil').value;
+    const status = document.getElementById('status').value;
 
     const id = e.target.dataset.id;
 
@@ -456,13 +465,16 @@ document.getElementById('formUsuario').addEventListener('submit', async (e)=>{
             id_usuario:id,
             nome,
             email,
-            perfil
+            perfil,
+            senha: senha || undefined,
+            ativo: status
         }
         : {
             nome,
             email,
             senha,
-            perfil
+            perfil,
+            ativo: status
         };
 
     const res = await fetch(API,{
@@ -496,17 +508,35 @@ document.getElementById('formUsuario').addEventListener('submit', async (e)=>{
     }
 });
 
+// ================= NOVO USUÁRIO =================
+function novoUsuario() {
+    const form = document.getElementById('formUsuario');
+    form.reset();
+    delete form.dataset.id;
+    document.getElementById('senha').required = true;
+    document.getElementById('senhaLabel').textContent = 'Senha *';
+    document.getElementById('grupoStatus').style.display = 'none';
+
+    new bootstrap.Modal(
+        document.getElementById('modalUsuario')
+    ).show();
+}
+
 // ================= EDITAR =================
-function editarUsuario(id,nomeUsuario,emailUsuario,perfilUsuario){
+function editarUsuario(id,nomeUsuario,emailUsuario,perfilUsuario,ativoUsuario){
+
+    const form = document.getElementById('formUsuario');
+    form.reset();
 
     nome.value = nomeUsuario;
     email.value = emailUsuario;
     perfil.value = perfilUsuario;
+    document.getElementById('status').value = (ativoUsuario !== undefined) ? ativoUsuario : '1';
 
     senha.value = '';
-
-    const form =
-        document.getElementById('formUsuario');
+    senha.required = false;
+    document.getElementById('senhaLabel').textContent = 'Senha (deixe em branco para manter a atual)';
+    document.getElementById('grupoStatus').style.display = 'block';
 
     form.dataset.id = id;
 

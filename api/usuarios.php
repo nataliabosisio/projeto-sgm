@@ -129,11 +129,24 @@ switch ($method) {
         $email = $conn->real_escape_string(trim($data->email));
         $perfil = $conn->real_escape_string(trim($data->perfil));
 
+        $set_parts = [
+            "nome='$nome'",
+            "email='$email'",
+            "perfil='$perfil'"
+        ];
+
+        if (isset($data->ativo)) {
+            $ativo = (int)$data->ativo;
+            $set_parts[] = "ativo=$ativo";
+        }
+
+        if (!empty($data->senha)) {
+            $senha_hash = password_hash(trim($data->senha), PASSWORD_DEFAULT);
+            $set_parts[] = "senha_hash='$senha_hash'";
+        }
+
         $sql = "UPDATE usuarios
-                SET
-                    nome='$nome',
-                    email='$email',
-                    perfil='$perfil'
+                SET " . implode(", ", $set_parts) . "
                 WHERE id_usuario=$id";
 
         if ($conn->query($sql)) {
