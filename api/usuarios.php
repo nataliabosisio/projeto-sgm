@@ -16,18 +16,23 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
 
-    // ================= LISTAR =================
+// ================= LISTAR =================
     case 'GET':
 
-        $sql = "SELECT
-                    id_usuario,
-                    nome,
-                    email,
-                    perfil,
-                    ativo,
-                    data_criacao
-                FROM usuarios
-                ORDER BY nome ASC";
+        // Verifica se veio um filtro de perfil na URL (ex: ?perfil=tecnico)
+        $perfil_filtro = isset($_GET['perfil']) ? $conn->real_escape_string($_GET['perfil']) : '';
+
+        // Se veio o filtro, buscamos apenas os ativos daquele perfil. Caso contrário, traz todos.
+        if ($perfil_filtro !== '') {
+            $sql = "SELECT id_usuario, nome, email, perfil, ativo, data_criacao 
+                    FROM usuarios 
+                    WHERE perfil = '$perfil_filtro' AND ativo = 1 
+                    ORDER BY nome ASC";
+        } else {
+            $sql = "SELECT id_usuario, nome, email, perfil, ativo, data_criacao 
+                    FROM usuarios 
+                    ORDER BY nome ASC";
+        }
 
         $result = $conn->query($sql);
 

@@ -14,8 +14,8 @@ if (!$id) {
 ?>
 
 <!DOCTYPE html>
-    <html lang="pt-br">
-    <head>
+<html lang="pt-br">
+<head>
     <meta charset="UTF-8">
     <title>SGM - Detalhes do Chamado</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -96,13 +96,12 @@ if (!$id) {
 
     .status.aberto{ background:#28a745; }
     .status.em_execucao{ background:#f0ad4e; }
-    .status.concluido{ background:#0d6efd; }
+    .status.concluido{ background:#198754; }
     .status.fechado{ background:#0d6efd; }
-
     </style>
-    </head>
+</head>
 
-    <body>
+<body>
 
     <div class="topbar d-flex justify-content-between align-items-center">
         <h3>Detalhes do Chamado</h3>
@@ -112,29 +111,22 @@ if (!$id) {
     </div>
 
     <div class="container">
-
         <div class="row">
 
-            <!-- ESQUERDA -->
             <div class="col-md-7">
-
                 <div class="card-modern">
                     <h5 class="card-title">Dados da Solicitação</h5>
                     <div id="detalhesChamado">Carregando...</div>
                 </div>
-
                 <div id="areaFechamento"></div>
-
             </div>
 
-            <!-- DIREITA -->
             <div class="col-md-5">
 
-                <div class="card-modern">
+                <div class="card-modern" id="cardTriagem">
                     <h5 class="card-title">Triagem e Atribuição</h5>
 
                     <form id="formAtribuir">
-
                         <input type="hidden" id="id_chamado" value="<?= $id ?>">
 
                         <div class="mb-3">
@@ -162,30 +154,37 @@ if (!$id) {
                         <button class="btn-main w-100">
                             Confirmar Atribuição
                         </button>
-
                     </form>
+                </div>
 
+                <div class="card-modern d-none" id="cardConcluido">
+                    <h5 class="card-title text-success">
+                        <i class="bi bi-check-circle-fill"></i> Atendimento Finalizado
+                    </h5>
+                    <hr>
+                    <p><strong>Técnico Responsável:</strong> <span id="infoTecnico">...</span></p>
+                    <p><strong>Prioridade Definida:</strong> <span id="infoPrioridade" class="badge bg-secondary">...</span></p>
+                    <p><strong>Data Prevista original:</strong> <span id="infoDataPrevista">...</span></p>
+                    <div class="alert alert-success mt-3 text-center py-2" style="font-size: 14px;">
+                        Este chamado já foi solucionado e não pode receber novas alterações de equipe.
+                    </div>
                 </div>
 
             </div>
         </div>
     </div>
 
-    <!-- MODAL FOTO -->
     <div class="modal fade" id="modalFoto">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content bg-dark">
-        <div class="modal-body p-0 text-center">
-            <img id="imgModal" class="img-fluid">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-dark">
+                <div class="modal-body p-0 text-center">
+                    <img id="imgModal" class="img-fluid">
+                </div>
+                <div class="modal-footer border-0">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
         </div>
-
-        <div class="modal-footer border-0">
-            <button class="btn btn-secondary" data-bs-dismiss="modal">
-                Fechar
-            </button>
-        </div>
-        </div>
-    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -215,27 +214,20 @@ if (!$id) {
     async function carregarDados(){
 
         /* ================= TECNICOS ================= */
-        const tecnicosResp = await fetchJSON('api/usuarios.php');
-
+        const tecnicosResp = await fetchJSON('api/usuarios.php?perfil=tecnico');
         const select = document.getElementById('selectTecnico');
         select.innerHTML = '<option value="">Selecione um técnico...</option>';
 
         if (!tecnicosResp || tecnicosResp.success === false) {
-        console.error("Erro na API usuários:", tecnicosResp);
-        select.innerHTML = '<option>Erro ao carregar técnicos</option>';
-        return;
-    }
+            console.error("Erro na API usuários:", tecnicosResp);
+            select.innerHTML = '<option>Erro ao carregar técnicos</option>';
+            return;
+        }
 
-    const tecnicos = Array.isArray(tecnicosResp)
-        ? tecnicosResp
-        : (tecnicosResp.data || []);
+        const tecnicos = Array.isArray(tecnicosResp) ? tecnicosResp : (tecnicosResp.data || []);
 
         tecnicos.forEach(t => {
-            select.innerHTML += `
-                <option value="${t.id_usuario}">
-                    ${t.nome}
-                </option>
-            `;
+            select.innerHTML += `<option value="${t.id_usuario}">${t.nome}</option>`;
         });
 
         /* ================= CHAMADO ================= */
@@ -247,9 +239,22 @@ if (!$id) {
             return;
         }
 
-        const dataFormatada = c.data_abertura
-            ? new Date(c.data_abertura).toLocaleString('pt-BR')
-            : '';
+        // Verifica se o status indica finalização
+        const statusAtual = (c.status || '').toLowerCase();
+        if(statusAtual === 'concluido' || statusAtual === 'fechado') {
+            // Esconde formulário de atribuição e mostra painel estático
+            document.getElementById('cardTriagem').classList.add('d-none');
+            document.getElementById('cardConcluido').classList.remove('d-none');
+
+            // Preenche as informações fixas da conclusão
+            document.getElementById('infoTecnico').textContent = c.tecnico_nome || 'Não informado';
+            document.getElementById('infoPrioridade').textContent = (c.prioridade || 'Não definida').toUpperCase();
+            document.getElementById('infoDataPrevista').textContent = c.data_prevista 
+                ? new Date(c.data_prevista).toLocaleDateString('pt-BR') 
+                : 'Não informada';
+        }
+
+        const dataFormatada = c.data_abertura ? new Date(c.data_abertura).toLocaleString('pt-BR') : '';
 
         document.getElementById('detalhesChamado').innerHTML = `
             <p><strong>Status:</strong>
@@ -268,19 +273,14 @@ if (!$id) {
 
         /* ================= ANEXOS ================= */
         const anexosResp = await fetchJSON(`api/anexos.php?id_chamado=${ID}`);
-
         const anexos = Array.isArray(anexosResp) ? anexosResp : [];
 
         let html = '';
-
         anexos.forEach(a => {
             const path = a.caminho_arquivo;
-
             html += `
                 <div class="col-4 mb-2">
-                    <img src="${path}"
-                        class="thumb-img"
-                        onclick="verFoto('${path}')">
+                    <img src="${path}" class="thumb-img" onclick="verFoto('${path}')">
                 </div>
             `;
         });
@@ -313,5 +313,5 @@ if (!$id) {
     carregarDados();
     </script>
 
-    </body>
-    </html>
+</body>
+</html>

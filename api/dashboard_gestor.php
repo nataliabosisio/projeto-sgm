@@ -27,6 +27,7 @@ $dados = $res->fetch_assoc();
 $sqlAtividade = "
     SELECT id_chamado, descricao_problema, data_abertura
     FROM chamados
+    WHERE status != 'fechado'
     ORDER BY data_abertura DESC
     LIMIT 3
 ";

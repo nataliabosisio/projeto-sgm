@@ -21,7 +21,7 @@ $id_chamado = isset($_GET['id']) ? (int)$_GET['id'] : 0;
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
     <style>
@@ -33,7 +33,7 @@ $id_chamado = isset($_GET['id']) ? (int)$_GET['id'] : 0;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* SIDEBAR (Idêntica à Fila de Trabalho) */
+        /* SIDEBAR */
         .sidebar {
             position: fixed;
             top: 0;
@@ -146,7 +146,7 @@ $id_chamado = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
         .card-header-title.info-title i { color: #267899; }
         .card-header-title.action-title i { color: #267899; }
-        .card-header-title.concluido-title i { color: #64748b; }
+        .card-header-title.concluido-title i { color: #198754; }
 
         /* CAMPOS DE EXIBIÇÃO DE INFORMAÇÃO */
         .info-label {
@@ -178,10 +178,10 @@ $id_chamado = isset($_GET['id']) ? (int)$_GET['id'] : 0;
         .badge-aberto { background: #007bff; color: white; }
         .badge-agendado { background: #00bcd4; color: white; }
         .badge-em_execucao { background: #ffc107; color: #212529; }
-        .badge-concluido { background: #267899; color: white; }
+        .badge-concluido { background: #198754; color: white; }
         .badge-fechado { background: #6c757d; color: white; }
 
-        /* CAIXAS DE TEXTO EXIBIDO (PROBLEMA E SOLUÇÃO) */
+        /* CAIXAS DE TEXTO EXIBIDO */
         .text-display-box {
             background: #f1f5f9;
             padding: 16px;
@@ -238,6 +238,56 @@ $id_chamado = isset($_GET['id']) ? (int)$_GET['id'] : 0;
         }
         .btn-submit-report:hover { background: #1f617c; }
         .btn-submit-report:disabled { background: #a4b5bc; cursor: not-allowed; }
+
+        /* MINIATURAS DAS IMAGENS */
+        .img-thumbnail-zoom {
+            width: 110px; 
+            height: 90px; 
+            object-fit: cover; 
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        .img-thumbnail-zoom:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-color: #267899;
+        }
+
+        /* MODAL CUSTOMIZADO NATIVO (BLINDADO CONTRA ERROS DO BOOTSTRAP) */
+        .custom-image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+        }
+        .custom-image-modal.active {
+            display: flex;
+        }
+        .custom-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+        }
+        .custom-modal-img {
+            max-width: 85%;
+            max-height: 85vh;
+            object-fit: contain;
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.6);
+        }
     </style>
 </head>
 <body>
@@ -314,8 +364,8 @@ $id_chamado = isset($_GET['id']) ? (int)$_GET['id'] : 0;
                         <div class="text-display-box" id="lblDescricao">...</div>
 
                         <div class="info-label">Fotos (Abertura)</div>
-                        <div class="text-muted small mt-1" id="containerFotosAbertura">
-                            Nenhuma foto anexada.
+                        <div class="d-flex flex-wrap gap-2 mt-1" id="containerFotosAbertura">
+                            <span class="text-muted small">Nenhuma foto anexada.</span>
                         </div>
                     </div>
                 </div>
@@ -326,199 +376,266 @@ $id_chamado = isset($_GET['id']) ? (int)$_GET['id'] : 0;
         </div>
     </div>
 
-<script>
-    const idChamado = <?= $id_chamado ?>;
+    <div id="customImageModal" class="custom-image-modal" onclick="fecharModalImagem()">
+        <span class="custom-modal-close" onclick="fecharModalImagem()">&times;</span>
+        <img class="custom-modal-img" id="customModalImg" src="">
+    </div>
 
-    if (!idChamado || idChamado === 0) {
-        alert("ID do chamado inválido.");
-        window.location.href = 'tecnico_minhas_tarefas.php';
-    }
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/bundle.min.js"></script>
+    
+    <script>
+        const idChamado = <?= $id_chamado ?>;
 
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('collapsed');
-        document.getElementById('main').classList.toggle('expanded');
-    }
-
-    async function buscarDetalhesChamado() {
-        if(!idChamado) return;
-
-        try {
-            const resposta = await fetch(`api/chamados.php?id=${idChamado}`);
-            const chamado = await resposta.json();
-
-            if(chamado && chamado.id_chamado) {
-                document.getElementById('lblLocalizacao').textContent = `${chamado.bloco_nome} / ${chamado.ambiente_nome}`;
-                document.getElementById('lblDescricao').textContent = chamado.descricao_problema;
-                document.getElementById('lblPrioridade').textContent = chamado.prioridade || 'Média';
-                
-                const statusTxt = chamado.status.toLowerCase();
-                const statusBadge = document.getElementById('lblStatus');
-                statusBadge.textContent = chamado.status.replace('_', ' ');
-                
-                statusBadge.className = `status-badge-dinamico badge-${statusTxt}`;
-
-                if(statusTxt === 'concluido' || statusTxt === 'fechado') {
-                    montarPainelConcluido(chamado);
-                } else {
-                    montarFormularioExecucao();
-                }
-
-                buscarAnexosAbertura();
-            } else {
-                alert("Chamado não encontrado.");
-            }
-        } catch (error) {
-            console.error("Erro ao carregar dados do chamado:", error);
+        if (!idChamado || idChamado === 0) {
+            alert("ID do chamado inválido.");
+            window.location.href = 'tecnico_minhas_tarefas.php';
         }
-    }
 
-    function montarFormularioExecucao() {
-        const container = document.getElementById('colunaDireitaDinamica');
-        container.innerHTML = `
-            <div class="details-card">
-                <div class="card-header-title action-title">
-                    <i class="bi bi-check2-square"></i> Concluir Atendimento
-                </div>
-                <form id="formConclusao">
-                    <input type="hidden" name="id_chamado" value="${idChamado}">
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            document.getElementById('main').classList.toggle('expanded');
+        }
 
-                    <div class="mb-4">
-                        <label class="form-label-custom">Solução Técnica Aplicada *</label>
-                        <textarea class="form-control form-control-custom" name="solucao_tecnica" rows="4" placeholder="Descreva o que foi consertado..." required></textarea>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label-custom">Tempo Gasto (Minutos)</label>
-                        <input type="number" class="form-control form-control-custom" name="tempo_gasto" placeholder="Ex: 60">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label-custom">Fotos do Serviço (Opcional, Máx 3)</label>
-                        <input type="file" class="form-control form-control-custom" name="fotos_conclusao[]" multiple accept="image/*">
-                    </div>
-
-                    <button type="submit" class="btn-submit-report" id="btnSalvar">
-                        <i class="bi bi-check-circle"></i> Enviar Relatório e Concluir
-                    </button>
-                </form>
-            </div>
-        `;
-
-        document.getElementById('formConclusao').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const btn = document.getElementById('btnSalvar');
-            
-            // Captura os elementos diretamente do escopo do form atual pelo atributo 'name'
-            const campoSolucao = e.target.querySelector('[name="solucao_tecnica"]');
-            const campoTempo = e.target.querySelector('[name="tempo_gasto"]');
-            
-            const solucaoTexto = campoSolucao ? campoSolucao.value.trim() : '';
-            const tempoGastoValor = campoTempo ? campoTempo.value.trim() : '';
-            
-            if (!solucaoTexto) {
-                alert('Por favor, digite a solução técnica aplicada antes de enviar.');
-                return;
+        // Funções de controle do Modal Nativo (A prova de falhas)
+        function abrirModalImagem(url) {
+            const modal = document.getElementById('customImageModal');
+            const modalImg = document.getElementById('customModalImg');
+            if(modal && modalImg) {
+                modalImg.src = url;
+                modal.classList.add('active');
             }
+        }
 
-            btn.disabled = true;
-            btn.innerHTML = `Salvando...`;
+        function fecharModalImagem() {
+            const modal = document.getElementById('customImageModal');
+            if(modal) {
+                modal.classList.remove('active');
+            }
+        }
 
-            // Monta o FormData de forma explícita
-            const formData = new FormData();
-            formData.append('id_chamado', idChamado);
-            formData.append('solucao_tecnica', solucaoTexto);
-            formData.append('tempo_gasto', tempoGastoValor);
-
-            const inputFotos = e.target.querySelector('input[type="file"]');
-            if (inputFotos && inputFotos.files.length > 0) {
-                for (let i = 0; i < inputFotos.files.length; i++) {
-                    formData.append('fotos_conclusao[]', inputFotos.files[i]);
+        // Captura o clique nas fotos de forma delegada e segura
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('img-thumbnail-zoom')) {
+                const urlImagem = e.target.getAttribute('data-url');
+                if (urlImagem) {
+                    abrirModalImagem(urlImagem);
                 }
             }
+        });
+
+        // 1. BUSCA DETALHES PRINCIPAIS DO CHAMADO
+        async function buscarDetalhesChamado() {
+            if(!idChamado) return;
 
             try {
-                const resposta = await fetch('api/concluir_chamado.php', {
-                    method: 'POST',
-                    body: formData
-                });
+                const resposta = await fetch(`api/chamados.php?id=${idChamado}`);
+                const chamado = await resposta.json();
 
-                const textoResposta = await resposta.text();
-                let resultado;
+                if(chamado && chamado.id_chamado) {
+                    document.getElementById('lblLocalizacao').textContent = `${chamado.bloco_nome} / ${chamado.ambiente_nome}`;
+                    document.getElementById('lblDescricao').textContent = chamado.descricao_problema;
+                    document.getElementById('lblPrioridade').textContent = chamado.prioridade || 'Média';
+                    
+                    const statusTxt = chamado.status.toLowerCase();
+                    const statusBadge = document.getElementById('lblStatus');
+                    statusBadge.textContent = chamado.status.replace('_', ' ');
+                    
+                    statusBadge.className = `status-badge-dinamico badge-${statusTxt}`;
+
+                    if(statusTxt === 'concluido' || statusTxt === 'fechado') {
+                        montarPainelConcluido(chamado);
+                    } else {
+                        montarFormularioExecucao();
+                    }
+
+                    buscarAnexosAbertura();
+                } else {
+                    alert("Chamado não encontrado.");
+                }
+            } catch (error) {
+                console.error("Erro ao carregar dados do chamado:", error);
+            }
+        }
+
+        // 2. MONTA O PAINEL SE O CHAMADO JÁ ESTIVER CONCLUÍDO (Corrigido o bug das aspas literais)
+        function montarPainelConcluido(chamado) {
+            const container = document.getElementById('colunaDireitaDinamica');
+            const tempoGasto = chamado.tempo_gasto_minutos ? `${chamado.tempo_gasto_minutos} minutos` : '-';
+            const solucaoDefinida = chamado.solucao_tecnica || 'Nenhuma solução detalhada foi registrada.';
+
+            // CORRIGIDO: Agora usando template strings com crase (``) para renderizar as variáveis corretamente na tela
+            container.innerHTML = `
+                <div class="details-card">
+                    <div class="card-header-title concluido-title">
+                        <i class="bi bi-journal-check"></i> Relatório de Conclusão
+                    </div>
+
+                    <div class="info-label">Solução Registrada</div>
+                    <div class="text-display-box">
+                        ${solucaoDefinida}
+                    </div>
+
+                    <div class="info-label">Tempo Gasto</div>
+                    <div class="info-value">${tempoGasto}</div>
+
+                    <div class="info-label">Fotos (Conclusão)</div>
+                    <div class="d-flex flex-wrap gap-2 mt-1" id="containerFotosConclusao">
+                        <span class="text-muted small">Buscando fotos anexadas...</span>
+                    </div>
+                </div>
+            `;
+
+            buscarAnexosConclusao();
+        }
+
+        // 3. BUSCA AS FOTOS DE CONCLUSÃO
+        async function buscarAnexosConclusao() {
+            try {
+                const resposta = await fetch(`api/anexos.php?id_chamado=${idChamado}&tipo=conclusao`);
+                if (!resposta.ok) {
+                    document.getElementById('containerFotosConclusao').innerHTML = '<span class="text-danger small">Erro ao buscar fotos do servidor.</span>';
+                    return;
+                }
                 
-                try {
-                    resultado = JSON.parse(textoResposta);
-                } catch (err) {
-                    console.error("Resposta do servidor não pôde ser lida como JSON:", textoResposta);
-                    throw new Error("O servidor retornou uma resposta inválida. Verifique o console.");
+                const anexos = await resposta.json();
+                const container = document.getElementById('containerFotosConclusao');
+
+                if (anexos && anexos.length > 0) {
+                    container.innerHTML = ''; 
+                    anexos.forEach(anexo => {
+                        const img = document.createElement('img');
+                        img.src = anexo.caminho_arquivo;
+                        img.className = 'img-thumbnail img-thumbnail-zoom';
+                        img.setAttribute('data-url', anexo.caminho_arquivo);
+                        container.appendChild(img);
+                    });
+                } else {
+                    container.innerHTML = '<span class="text-muted small">Nenhuma foto enviada para este encerramento.</span>';
+                }
+            } catch (e) {
+                console.error('Erro ao buscar anexos de conclusão:', e);
+                document.getElementById('containerFotosConclusao').innerHTML = '<span class="text-danger small">Erro ao carregar fotos.</span>';
+            }
+        }
+
+        // 4. BUSCA AS FOTOS DE ABERTURA
+        async function buscarAnexosAbertura() {
+            try {
+                const resposta = await fetch(`api/anexos.php?id_chamado=${idChamado}&tipo=abertura`);
+                if (!resposta.ok) return;
+                const anexos = await resposta.json();
+                const container = document.getElementById('containerFotosAbertura');
+
+                if(anexos && anexos.length > 0) {
+                    container.innerHTML = '';
+                    anexos.forEach(anexo => {
+                        const img = document.createElement('img');
+                        img.src = anexo.caminho_arquivo;
+                        img.className = 'img-thumbnail img-thumbnail-zoom';
+                        img.setAttribute('data-url', anexo.caminho_arquivo);
+                        container.appendChild(img);
+                    });
+                } else {
+                    container.innerHTML = '<span class="text-muted small">Nenhuma foto anexada.</span>';
+                }
+            } catch(e) {
+                console.error('Erro ao buscar anexos de abertura:', e);
+            }
+        }
+
+        // 5. MONTA O FORMULÁRIO SE O CHAMADO AINDA ESTIVER EM ABERTO/EXECUÇÃO
+        function montarFormularioExecucao() {
+            const container = document.getElementById('colunaDireitaDinamica');
+            container.innerHTML = `
+                <div class="details-card">
+                    <div class="card-header-title action-title">
+                        <i class="bi bi-gear"></i> Registrar Conclusão
+                    </div>
+                    <form id="formConclusao" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label-custom">Solução Técnica Realizada *</label>
+                            <textarea class="form-control-custom w-100" name="solucao_tecnica" rows="4" placeholder="Descreva detalhadamente o que foi feito para resolver o problema..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label-custom">Tempo Gasto (Em Minutos)</label>
+                            <input type="number" class="form-control-custom w-100" name="tempo_gasto" placeholder="Ex: 30">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label-custom">Evidências por Foto (Conclusão)</label>
+                            <input type="file" class="form-control" name="fotos_conclusao[]" multiple accept="image/*">
+                        </div>
+                        <button type="submit" class="btn-submit-report" id="btnSalvar">
+                            <i class="bi bi-check-circle"></i> Enviar Relatório e Concluir
+                        </button>
+                    </form>
+                </div>
+            `;
+
+            document.getElementById('formConclusao').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const btn = document.getElementById('btnSalvar');
+                const campoSolucao = e.target.querySelector('[name="solucao_tecnica"]');
+                const campoTempo = e.target.querySelector('[name="tempo_gasto"]');
+                
+                const solucaoTexto = campoSolucao ? campoSolucao.value.trim() : '';
+                const tempoGastoValor = campoTempo ? campoTempo.value.trim() : '0';
+                
+                if (!solucaoTexto) {
+                    alert('Por favor, digite a solução técnica aplicada antes de enviar.');
+                    return;
                 }
 
-                if (resultado.sucesso) {
-                    alert('Chamado concluído com sucesso!');
-                    window.location.href = 'tecnico_minhas_tarefas.php';
-                } else {
-                    alert('Erro: ' + (resultado.erro || 'Falha ao salvar.'));
+                btn.disabled = true;
+                btn.innerHTML = `Salvando...`;
+
+                const formData = new FormData();
+                formData.append('id_chamado', idChamado);
+                formData.append('solucao_tecnica', solucaoTexto);
+                formData.append('tempo_gasto', tempoGastoValor);
+
+                const inputFotos = e.target.querySelector('input[type="file"]');
+                if (inputFotos && inputFotos.files.length > 0) {
+                    for (let i = 0; i < inputFotos.files.length; i++) {
+                        formData.append('fotos_conclusao[]', inputFotos.files[i]);
+                    }
+                }
+
+                try {
+                    const resposta = await fetch('api/concluir_chamado.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const textoResposta = await resposta.text();
+                    let resultado;
+                    
+                    try {
+                        resultado = JSON.parse(textoResposta);
+                    } catch (err) {
+                        console.error("Resposta do servidor inválida:", textoResposta);
+                        throw new Error("O servidor retornou uma resposta inesperada.");
+                    }
+
+                    if (resultado.sucesso) {
+                        alert('Chamado concluído com sucesso!');
+                        window.location.href = 'tecnico_minhas_tarefas.php';
+                    } else {
+                        alert('Erro: ' + (resultado.erro || 'Falha ao salvar.'));
+                        btn.disabled = false;
+                        btn.innerHTML = `<i class="bi bi-check-circle"></i> Enviar Relatório e Concluir`;
+                    }
+                } catch (error) {
+                    console.error("Erro no envio:", error);
+                    alert(error.message || 'Erro de comunicação com o servidor.');
                     btn.disabled = false;
                     btn.innerHTML = `<i class="bi bi-check-circle"></i> Enviar Relatório e Concluir`;
                 }
-            } catch (error) {
-                console.error("Erro no envio:", error);
-                alert(error.message || 'Erro de comunicação com o servidor.');
-                btn.disabled = false;
-                btn.innerHTML = `<i class="bi bi-check-circle"></i> Enviar Relatório e Concluir`;
-            }
-        });
-    }
-
-    function montarPainelConcluido(chamado) {
-    const container = document.getElementById('colunaDireitaDinamica');
-    // CORREÇÃO AQUI: Lendo a coluna correta que vem da sua tabela chamados
-    const tempoGasto = chamado.tempo_gasto_minutos ? `${chamado.tempo_gasto_minutos} minutos` : '-';
-    const solucaoDefinida = chamado.solucao_tecnica || 'Nenhuma solução detalhada foi registrada.';
-
-    container.innerHTML = `
-        <div class="details-card">
-            <div class="card-header-title concluido-title">
-                <i class="bi bi-journal-check"></i> Relatório de Conclusão
-            </div>
-
-            <div class="info-label">Solução Registrada</div>
-            <div class="text-display-box">
-                ${solucaoDefinida}
-            </div>
-
-            <div class="info-label">Tempo Gasto</div>
-            <div class="info-value">${tempoGasto}</div>
-
-            <div class="info-label">Fotos (Conclusão)</div>
-            <div class="text-muted small mt-1" id="containerFotosConclusao">
-                Nenhuma foto enviada.
-            </div>
-        </div>
-    `;
-}
-
-    async function buscarAnexosAbertura() {
-        try {
-            const resposta = await fetch(`api/anexos.php?id_chamado=${idChamado}`);
-            if (!resposta.ok) return;
-            const anexos = await resposta.json();
-            const container = document.getElementById('containerFotosAbertura');
-
-            if(anexos && anexos.length > 0) {
-                container.innerHTML = '';
-                anexos.forEach(anexo => {
-                    container.innerHTML += `
-                        <img src="${anexo.caminho_arquivo}" class="img-thumbnail me-2" style="max-width: 120px; height: 90px; object-fit: cover; cursor:pointer;" onclick="window.open('${anexo.caminho_arquivo}')">
-                    `;
-                });
-            }
-        } catch(e) {
-            console.error('Erro ao buscar anexos de abertura:', e);
+            });
         }
-    }
 
-    buscarDetalhesChamado();
-</script>
+        // Inicializa a busca
+        buscarDetalhesChamado();
+    </script>
 </body>
 </html>

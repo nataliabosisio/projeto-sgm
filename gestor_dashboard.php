@@ -231,7 +231,6 @@ body{
     <span class="menu-text">Usuários</span>
 </a>
 
-    <!-- 👇 NOVO ITEM ADICIONADO -->
     <a href="gestor_perfil.php">
         <i class="bi bi-person-circle"></i>
         <span class="menu-text">Perfil</span>
@@ -347,49 +346,42 @@ fetch('api/dashboard_gestor.php')
 .then(data => {
 
     /* RESUMO */
-    document.getElementById('abertos').textContent =
-        data.resumo.abertos;
-
-    document.getElementById('em_execucao').textContent =
-        data.resumo.em_execucao;
-
-    document.getElementById('urgentes').textContent =
-        data.resumo.urgentes;
+    document.getElementById('abertos').textContent = data.resumo.abertos;
+    document.getElementById('em_execucao').textContent = data.resumo.em_execucao;
+    document.getElementById('urgentes').textContent = data.resumo.urgentes;
 
     /* PERFIL */
-    document.getElementById('perfil_usuario').textContent =
-        data.perfil.usuario;
-
-    document.getElementById('perfil_usuario_topo').textContent =
-        data.perfil.usuario;
-
-    document.getElementById('perfil_nivel').textContent =
-        data.perfil.nivel;
+    document.getElementById('perfil_usuario').textContent = data.perfil.usuario;
+    document.getElementById('perfil_usuario_topo').textContent = data.perfil.usuario;
+    document.getElementById('perfil_nivel').textContent = data.perfil.nivel;
 
     /* NOTIFICAÇÕES */
-    document.getElementById('notificacoes').textContent =
-        data.resumo.urgentes;
+    document.getElementById('notificacoes').textContent = data.resumo.urgentes;
 
     /* DESEMPENHO */
-    document.getElementById('desempenho').textContent =
-        data.desempenho.concluidos;
+    document.getElementById('desempenho').textContent = data.desempenho.concluidos;
 
-    /* ATIVIDADE RECENTE */
-    const container =
-        document.getElementById('atividade_container');
-
+    /* ATIVIDADE RECENTE COM LIMITADOR DE TEXTO */
+    const container = document.getElementById('atividade_container');
     container.innerHTML = '';
 
-data.atividade.forEach(item => {
-    container.innerHTML += `
-        <div class="activity-item">
-            <span>Chamado #${item.id_chamado} - ${item.descricao_problema}</span>
-            <small class="text-muted">
-                ${item.data_abertura}
-            </small>
-        </div>
-    `;
-});
+    data.atividade.forEach(item => {
+        // Se a descrição for maior que 45 caracteres, corta e põe '...'
+        const descricaoCurta = item.descricao_problema.length > 45 
+            ? item.descricao_problema.substring(0, 45) + '...' 
+            : item.descricao_problema;
+
+        container.innerHTML += `
+            <div class="activity-item d-flex justify-content-between align-items-center py-2 border-bottom">
+                <span title="${item.descricao_problema}">
+                    <strong>Chamado #${item.id_chamado}</strong> - ${descricaoCurta}
+                </span>
+                <small class="text-muted ms-2" style="white-space: nowrap;">
+                    ${item.data_abertura}
+                </small>
+            </div>
+        `;
+    });
 
 })
 .catch(error => {

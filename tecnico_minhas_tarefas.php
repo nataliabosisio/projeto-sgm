@@ -33,7 +33,7 @@ $nome_tecnico = isset($_SESSION['user_nome']) ? $_SESSION['user_nome'] : (isset(
             -webkit-font-smoothing: antialiased;
         }
 
-        /* SIDEBAR (Idêntica ao Gestor e Solicitante) */
+        /* SIDEBAR */
         .sidebar {
             position: fixed;
             top: 0;
@@ -128,7 +128,7 @@ $nome_tecnico = isset($_SESSION['user_nome']) ? $_SESSION['user_nome'] : (isset(
             margin-bottom: 25px;
         }
 
-        /* BARRA DE FILTROS (Pílulas conforme imagem) */
+        /* BARRA DE FILTROS */
         .filter-bar {
             background: white;
             padding: 14px 20px;
@@ -159,13 +159,12 @@ $nome_tecnico = isset($_SESSION['user_nome']) ? $_SESSION['user_nome'] : (isset(
             color: #1e293b;
         }
 
-        /* Estados ativos das pílulas de filtro */
         .filter-btn.active[data-filter="todos"] { background: #267899; color: white; }
         .filter-btn.active[data-filter="aberto"] { background: #007bff; color: white; }
         .filter-btn.active[data-filter="em_execucao"] { background: #ffc107; color: #212529; }
         .filter-btn.active[data-filter="finalizados"] { background: #198754; color: white; }
 
-        /* GRID DE CARDS DA FILA */
+        /* GRID DE CARDS */
         .task-card {
             background: white;
             border-radius: 20px;
@@ -196,6 +195,7 @@ $nome_tecnico = isset($_SESSION['user_nome']) ? $_SESSION['user_nome'] : (isset(
             font-weight: 600;
             font-size: 1.25rem;
             margin-bottom: 4px;
+            padding-right: 60px;
         }
 
         .task-location {
@@ -204,7 +204,7 @@ $nome_tecnico = isset($_SESSION['user_nome']) ? $_SESSION['user_nome'] : (isset(
             display: flex;
             align-items: center;
             gap: 6px;
-            margin-bottom: 18px;
+            margin-bottom: 14px;
         }
 
         .task-desc-box {
@@ -214,7 +214,7 @@ $nome_tecnico = isset($_SESSION['user_nome']) ? $_SESSION['user_nome'] : (isset(
             border-radius: 4px 12px 12px 4px;
             font-size: 0.92rem;
             color: #334155;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             flex-grow: 1;
         }
 
@@ -246,7 +246,30 @@ $nome_tecnico = isset($_SESSION['user_nome']) ? $_SESSION['user_nome'] : (isset(
         .status-concluido { background: #198754; color: white; }
         .status-fechado { background: #6c757d; color: white; }
 
-        /* BOTÃO DE AÇÃO EXPANDIDO */
+        /* BADGES DE PRIORIDADE */
+        .prioridade-box {
+            margin-bottom: 14px;
+        }
+        .prio-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .prio-baixa { background: #e2e8f0; color: #475569; }
+        .prio-media { background: #fef3c7; color: #d97706; }
+        .prio-alta { background: #ffedd5; color: #ea580c; }
+        .prio-urgente { background: #fee2e2; color: #dc2626; animation: pulse 2s infinite; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
         .btn-actions-layout {
             display: flex;
             width: 100%;
@@ -333,13 +356,20 @@ $nome_tecnico = isset($_SESSION['user_nome']) ? $_SESSION['user_nome'] : (isset(
 
         async function carregarFila() {
             try {
-                const resposta = await fetch('api/chamados.php');
+                const resposta = await fetch('api/chamados_tecnico.php');
                 chamadosDados = await resposta.json();
+                
+                // Se a API retornar um objeto de erro estruturado em vez de lista
+                if (chamadosDados.success === false) {
+                    document.getElementById('gridChamados').innerHTML = `<div class="col-12 text-center text-danger py-5">Erro: ${chamadosDados.message}</div>`;
+                    return;
+                }
                 
                 renderizarCards('todos');
                 configurarFiltros();
             } catch (error) {
                 console.error("Erro ao carregar a fila de chamados:", error);
+                document.getElementById('gridChamados').innerHTML = `<div class="col-12 text-center text-danger py-5">Erro ao conectar com o servidor ou processar dados.</div>`;
             }
         }
 
@@ -354,6 +384,12 @@ $nome_tecnico = isset($_SESSION['user_nome']) ? $_SESSION['user_nome'] : (isset(
                 concluido: 'status-concluido',
                 fechado: 'status-fechado'
             };
+
+            // Garante que chamadosDados seja uma lista válida antes de filtrar
+            if (!Array.isArray(chamadosDados)) {
+                grid.innerHTML = `<div class="col-12 text-center text-warning py-5">Nenhum chamado atribuído ou formato inválido recebido.</div>`;
+                return;
+            }
 
             const dadosFiltrados = chamadosDados.filter(c => {
                 if (filtro === 'todos') return true;
@@ -371,9 +407,25 @@ $nome_tecnico = isset($_SESSION['user_nome']) ? $_SESSION['user_nome'] : (isset(
             }
 
             dadosFiltrados.forEach(c => {
-                const dataFormatada = new Date(c.data_abertura).toLocaleDateString('pt-BR');
+                const dataFormatada = c.data_abertura ? new Date(c.data_abertura).toLocaleDateString('pt-BR') : '--/--/----';
                 const classeBadge = statusClasses[c.status] || 'status-fechado';
-                const textoStatus = c.status.replace('_', ' ').toUpperCase();
+                const textoStatus = c.status ? c.status.replace('_', ' ').toUpperCase() : 'DESCONHECIDO';
+
+                // Lógica dinâmica para gerar o badge da prioridade definida pelo Gestor
+                const prio = (c.prioridade || 'baixa').toLowerCase();
+                let iconePrio = 'bi-info-circle';
+                if(prio === 'alta' || prio === 'urgente') iconePrio = 'bi-exclamation-triangle-fill';
+
+                const prioridadeHTML = `
+                    <div class="prioridade-box">
+                        <span class="prio-badge prio-${prio}">
+                            <i class="bi ${iconePrio}"></i> Prioridade: ${prio.toUpperCase()}
+                        </span>
+                    </div>
+                `;
+
+                // Tratando fallbacks caso sua coluna de descrição se chame 'descricao' ou 'descricao_problema'
+                const descricaoTexto = c.descricao_problema || c.descricao || 'Sem descrição informada.';
 
                 grid.innerHTML += `
                     <div class="col-md-6 col-lg-4">
@@ -386,8 +438,10 @@ $nome_tecnico = isset($_SESSION['user_nome']) ? $_SESSION['user_nome'] : (isset(
                                 <i class="bi bi-geo-alt"></i> ${c.ambiente_nome || 'Não Especificado'}
                             </div>
 
+                            ${prioridadeHTML}
+
                             <div class="task-desc-box">
-                                "${c.descricao_problema}"
+                                "${descricaoTexto}"
                             </div>
 
                             <div class="task-footer">

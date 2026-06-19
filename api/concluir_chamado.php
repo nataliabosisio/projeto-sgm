@@ -48,26 +48,83 @@ try {
         exit;
     }
 
+    // Inicia uma transação no banco
+    $conn->begin_transaction();
+
     $solucao_escapada = $conn->real_escape_string($solucao_tecnica);
 
-    // CORREÇÃO: Atualizando a coluna exata do banco -> tempo_gasto_minutos
+    // CORREÇÃO: Adicionado data_conclusao = NOW() para gravar a hora exata da finalização
     $sql = "UPDATE chamados 
             SET status = 'concluido', 
                 solucao_tecnica = '$solucao_escapada',
-                tempo_gasto_minutos = $tempo_gasto 
+                tempo_gasto_minutos = $tempo_gasto,
+                data_conclusao = NOW() 
             WHERE id_chamado = $id_chamado";
     
-    if ($conn->query($sql)) {
-        echo json_encode([
-            "sucesso" => true, 
-            "mensagem" => "Chamado finalizado com sucesso!"
-        ]);
-        exit;
-    } else {
-        throw new Exception("Erro ao executar comandos no banco: " . $conn->error);
+    if (!$conn->query($sql)) {
+        throw new Exception("Erro ao atualizar o chamado: " . $conn->error);
     }
 
+    // ==========================================
+    // LÓGICA DE UPLOAD DAS FOTOS DE CONCLUSÃO
+    // ==========================================
+    if (isset($_FILES['fotos_conclusao'])) {
+        $arquivos = $_FILES['fotos_conclusao'];
+        $total_arquivos = count($arquivos['name']);
+        
+        $diretorio_destino = "../uploads/";
+        if (!is_dir($diretorio_destino)) {
+            mkdir($diretorio_destino, 0755, true);
+        }
+
+        $extensoes_permitidas = ['jpg', 'jpeg', 'png', 'webp'];
+
+        for ($i = 0; $i < $total_arquivos; $i++) {
+            if ($arquivos['error'][$i] === UPLOAD_ERR_OK) {
+                
+                $nome_original = $arquivos['name'][$i];
+                $extensao = strtolower(pathinfo($nome_original, PATHINFO_EXTENSION));
+                
+                if (!in_array($extensao, $extensoes_permitidas)) {
+                    throw new Exception("Extensão de arquivo não permitida para o arquivo: $nome_original");
+                }
+
+                $novo_nome = "concluido_" . $id_chamado . "_" . uniqid() . "." . $extensao;
+                $caminho_completo = $diretorio_destino . $novo_nome;
+                $caminho_banco = "uploads/" . $novo_nome;
+
+                if (move_uploaded_file($arquivos['tmp_name'][$i], $caminho_completo)) {
+                    $sql_anexo = "INSERT INTO chamados_anexos (id_chamado, caminho_arquivo, tipo_anexo) 
+                                  VALUES (?, ?, 'conclusao')";
+                    
+                    $stmt_anexo = $conn->prepare($sql_anexo);
+                    $stmt_anexo->bind_param("is", $id_chamado, $caminho_banco);
+                    
+                    if (!$stmt_anexo->execute()) {
+                        throw new Exception("Erro ao salvar anexo no banco: " . $stmt_anexo->error);
+                    }
+                } else {
+                    throw new Exception("Falha ao mover o arquivo enviado para o diretório de destino.");
+                }
+            } elseif ($arquivos['error'][$i] !== UPLOAD_ERR_NO_FILE) {
+                throw new Exception("Erro no upload do arquivo código: " . $arquivos['error'][$i]);
+            }
+        }
+    }
+
+    $conn->commit();
+
+    echo json_encode([
+        "sucesso" => true, 
+        "mensagem" => "Chamado finalizado e fotos salvas com sucesso!"
+    ]);
+    exit;
+
 } catch (Exception $e) {
+    if (isset($conn) && $conn->ping()) {
+        $conn->rollback();
+    }
+
     http_response_code(500);
     echo json_encode([
         "sucesso" => false,
